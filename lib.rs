@@ -1,14 +1,12 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-
 #[ink::contract]
 mod erc20 {
-    use ink::{storage::Mapping, env::account_id};
-    //use scale_info::named_type_params;
+    use ink::storage::Mapping;
 
-    pub type TokenId = AccountId;
+    /// A simple ERC-20 contract.
     #[ink(storage)]
-    
+    #[derive(Default)]
     pub struct Erc20 {
         /// Total token supply.
         total_supply: Balance,
@@ -17,7 +15,6 @@ mod erc20 {
         /// Mapping of the token amount which an account is allowed to withdraw
         /// from another account.
         allowances: Mapping<(AccountId, AccountId), Balance>,
-        id: TokenId,
     }
 
     /// Event emitted when a token transfer occurs.
@@ -28,7 +25,6 @@ mod erc20 {
         #[ink(topic)]
         to: Option<AccountId>,
         value: Balance,
-        id: Option<TokenId>,
     }
 
     /// Event emitted when an approval occurs that `spender` is allowed to withdraw
@@ -40,7 +36,6 @@ mod erc20 {
         #[ink(topic)]
         spender: AccountId,
         value: Balance,
-        id: Option<TokenId>,
     }
 
     /// The ERC-20 error types.
@@ -67,13 +62,11 @@ mod erc20 {
                 from: None,
                 to: Some(caller),
                 value: total_supply,
-                id: None,
             });
             Self {
                 total_supply,
                 balances,
                 allowances: Default::default(),
-                id: Self::env().caller(),
             }
         }
 
@@ -91,19 +84,6 @@ mod erc20 {
             self.balance_of_impl(&owner)
         }
 
-        #[ink(message)]
-
-        pub fn mint(&mut self,id: TokenId) -> Result<()> {
-            let caller = self.env().caller();
-
-            self.env().emit_event(Transfer {
-                from: Some(AccountId::from([0x0; 32])),
-                to: Some(caller),
-                value: 100,
-                id: Some(AccountId::from([0xd9; 32])),
-            });
-            Ok(())
-        }
         /// Returns the account balance for the specified `owner`.
         ///
         /// Returns `0` if the account is non-existent.
@@ -167,7 +147,6 @@ mod erc20 {
                 owner,
                 spender,
                 value,
-                id: None,
             });
             Ok(())
         }
@@ -230,7 +209,6 @@ mod erc20 {
                 from: Some(*from),
                 to: Some(*to),
                 value,
-                id: None,
             });
             Ok(())
         }
